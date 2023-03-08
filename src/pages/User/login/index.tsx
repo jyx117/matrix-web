@@ -16,8 +16,10 @@ import type { Dispatch } from 'umi';
 import type { StateType } from '@/models/login';
 import type { LoginParamsType } from '@/services/login';
 import type { ConnectState } from '@/models/connect';
-
 import styles from './index.less';
+import { login } from '../../../services/login';
+import { STORAGE_TYPE, putStorage, updateCurrentUser } from '../../../utils/storage';
+import { history } from 'umi';
 
 export type LoginProps = {
   dispatch: Dispatch;
@@ -38,19 +40,41 @@ const LoginMessage: React.FC<{
   />
 );
 
+const LOGIN_TYPE = {
+  PASSWORD: 'PASSWORD'
+}
+
 const Login: React.FC<LoginProps> = (props) => {
   const { userLogin = {}, submitting } = props;
   const { status, type: loginType } = userLogin;
-  const [type, setType] = useState<string>('account');
+  const [type, setType] = useState<string>(LOGIN_TYPE.PASSWORD);
   const intl = useIntl();
 
-  const handleSubmit = (values: LoginParamsType) => {
-    const { dispatch } = props;
+  const doLogin = async (values: any) => {
+    const param = { ...values, identityType: type };
+    const response = await login(param);
+    console.log('doLogin:', response);
+    if (!response || !response.success) {
+      console.log('登录失败');
+    } else {
+      const { data } = response || {};
+      updateCurrentUser(data);
+      const { tenants } = data || {};
+      const tenant = !tenants || tenants?.length < 1 ? null : tenants[0];
+      putStorage(STORAGE_TYPE.TENANT, tenant);
+      history.push('/');
+    }
+  }
+
+  const handleSubmit = (values: any) => {
+    doLogin(values);
+    /**const { dispatch } = props;
     dispatch({
       type: 'login/login',
       payload: { ...values, type },
-    });
+    });*/
   };
+
   return (
     <div className={styles.main}>
       <ProForm
@@ -74,7 +98,7 @@ const Login: React.FC<LoginProps> = (props) => {
       >
         <Tabs activeKey={type} onChange={setType}>
           <Tabs.TabPane
-            key="account"
+            key={LOGIN_TYPE.PASSWORD}
             tab={intl.formatMessage({
               id: 'pages.login.accountLogin.tab',
               defaultMessage: 'Account password login',
@@ -89,7 +113,7 @@ const Login: React.FC<LoginProps> = (props) => {
           />
         </Tabs>
 
-        {status === 'error' && loginType === 'account' && !submitting && (
+        {status === 'error' && loginType === LOGIN_TYPE.PASSWORD && !submitting && (
           <LoginMessage
             content={intl.formatMessage({
               id: 'pages.login.accountLogin.errorMessage',
@@ -97,10 +121,10 @@ const Login: React.FC<LoginProps> = (props) => {
             })}
           />
         )}
-        {type === 'account' && (
+        {type === LOGIN_TYPE.PASSWORD && (
           <>
             <ProFormText
-              name="userName"
+              name="name"
               fieldProps={{
                 size: 'large',
                 prefix: <UserOutlined className={styles.prefixIcon} />,
@@ -122,7 +146,7 @@ const Login: React.FC<LoginProps> = (props) => {
               ]}
             />
             <ProFormText.Password
-              name="password"
+              name="credential"
               fieldProps={{
                 size: 'large',
                 prefix: <LockOutlined className={styles.prefixIcon} />,

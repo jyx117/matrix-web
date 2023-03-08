@@ -9,7 +9,7 @@ import type {
   Settings,
 } from '@ant-design/pro-layout';
 import ProLayout, { DefaultFooter } from '@ant-design/pro-layout';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch } from 'umi';
 import { Link, useIntl, connect, history } from 'umi';
 import { GithubOutlined } from '@ant-design/icons';
@@ -19,6 +19,8 @@ import RightContent from '@/components/GlobalHeader/RightContent';
 import type { ConnectState } from '@/models/connect';
 import { getMatchMenu } from '@umijs/route-utils';
 import logo from '../assets/logo.svg';
+import { queryUser } from '../services/user';
+import { updateCurrentUser } from '../utils/storage';
 
 const noMatch = (
   <Result
@@ -89,17 +91,26 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
       pathname: '/',
     },
   } = props;
-
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const menuDataRef = useRef<MenuDataItem[]>([]);
 
-  useEffect(() => {
-    if (dispatch) {
-      dispatch({
-        type: 'user/fetchCurrent',
-      });
+  const getUser = async () => {
+    console.log('getUser:');
+    const msg = await queryUser();
+    console.log('msg:', msg);
+    if (msg && msg.success) {
+      setCurrentUser(msg.data);
+      updateCurrentUser(msg.data);
     }
+  }
+
+  useEffect(() => {
+    getUser();
   }, []);
-  /** Init variables */
+  
+  useEffect(() => {
+    console.log('location changed');
+  }, [window.location.href]);
 
   const handleMenuCollapse = (payload: boolean): void => {
     if (dispatch) {
@@ -119,6 +130,7 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
   );
 
   const { formatMessage } = useIntl();
+  console.log('currentUser:', currentUser);
 
   return (
     <ProLayout
@@ -160,7 +172,7 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
         return null;
       }}
       menuDataRender={menuDataRender}
-      rightContentRender={() => <RightContent />}
+      rightContentRender={() => <RightContent props={props} />}
       postMenuData={(menuData) => {
         menuDataRef.current = menuData || [];
         return menuData || [];

@@ -1,6 +1,7 @@
 /** Request 网络请求工具 更详细的 api 文档: https://github.com/umijs/umi-request */
 import { extend } from 'umi-request';
 import { notification } from 'antd';
+import { history } from 'umi';
 
 const codeMessage: Record<number, string> = {
   200: '服务器成功返回请求的数据。',
@@ -50,6 +51,24 @@ const errorHandler = (error: { response: Response }): Response => {
 const request = extend({
   errorHandler, // default error handling
   credentials: 'include', // Does the default request bring cookies
+});
+
+const NO_LOGIN_CODES = ['BIZ_0003', 'BIZ_0004', 'BIZ_0005', 'BIZ_0006', 'BIZ_0007', 'BIZ_0008', 'BIZ_0009', 'BIZ_0010'];
+request.interceptors.response.use(async (response, options) => {
+  const backUrl = window.location.href;
+  const data = await response.clone().json();
+  console.log('data:', data);
+
+  const { code } = data || {};
+  if (NO_LOGIN_CODES.indexOf(code) != -1) {
+    if (!backUrl || backUrl === '/user/login') {
+      history.push(`/user/login`);
+    } else {
+      history.push(`/user/login?refer=${encodeURIComponent(backUrl)}`);
+    }
+  }
+
+  return response;
 });
 
 export default request;
