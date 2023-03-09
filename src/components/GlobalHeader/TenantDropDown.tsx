@@ -1,8 +1,11 @@
+import {useState} from 'react';
 import { EnvironmentOutlined } from '@ant-design/icons';
-import { Dropdown, Space } from 'antd';
-import { getTenants, getTenant } from '../../utils/storage';
+import { Dropdown, Space, Button } from 'antd';
+import { getTenants, getTenant, updateCurrentTenant } from '../../utils/storage';
 
 const TenantDropdown = () => {
+
+  const [currentTenant, setCurrentTenant] = useState<any>(getTenant());
 
   const buildItems = () => {
     const tenants = getTenants();
@@ -19,17 +22,28 @@ const TenantDropdown = () => {
     });
   }
 
+  const changeTenant = (value) => {
+    console.log('changeTenant:', value);
+    const {key} = value || {};
+    updateCurrentTenant(key);
+    setCurrentTenant(key);
+  }
+
   const items = buildItems();
-  const tenant = getTenant();
   return (
     <span style={{ marginRight: 10 }}>
-      <Dropdown menu={{ items }}>
-        <a onClick={(e) => e.preventDefault()}>
+      <Dropdown menu={{
+        items,
+        selectable: true,
+        defaultSelectedKeys: [!currentTenant ? '' : currentTenant],
+        onClick: changeTenant,
+      }}>
+        <Button type="text" onClick={(e) => e.preventDefault()}>
           <Space>
             <EnvironmentOutlined />
-            {tenant}
+            {currentTenant}
           </Space>
-        </a>
+        </Button>
       </Dropdown>
     </span>
   );
