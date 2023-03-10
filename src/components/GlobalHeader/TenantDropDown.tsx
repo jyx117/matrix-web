@@ -27,6 +27,7 @@ const TenantDropdown = () => {
     const {key} = value || {};
     updateCurrentTenant(key);
     setCurrentTenant(key);
+    window.location.reload();
   }
 
   const items = buildItems();
