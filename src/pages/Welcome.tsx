@@ -2,6 +2,7 @@ import React from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import { Card, Alert, Typography } from 'antd';
 import { useIntl, FormattedMessage } from 'umi';
+import {getFromStorage, STORAGE_TYPE} from '@/utils/storage';
 import styles from './Welcome.less';
 
 const CodePreview: React.FC = ({ children }) => (
@@ -14,6 +15,9 @@ const CodePreview: React.FC = ({ children }) => (
 
 export default (): React.ReactNode => {
   const intl = useIntl();
+  const token = getFromStorage(STORAGE_TYPE.TOKEN);
+  const tenant = getFromStorage(STORAGE_TYPE.TENANT);
+  const url = '/gateway/account/loginBySso.json?uid=261698279016849473&parentUid=1564266258685674&cloudSource=ALIBABA&token=' + token + '&tenant=' + tenant;
   return (
     <PageContainer>
       <Card>
@@ -57,6 +61,8 @@ export default (): React.ReactNode => {
           </a>
         </Typography.Text>
         <CodePreview>yarn add @ant-design/pro-layout</CodePreview>
+
+        <a href={url} target={'_blank'}>点击登录</a>
       </Card>
     </PageContainer>
   );
