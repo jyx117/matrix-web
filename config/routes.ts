@@ -34,6 +34,19 @@
                 component: './Welcome',
               },
               {
+                path: '/account',
+                name: 'account',
+                icon: 'smile',
+                routes: [
+                  {
+                    path: '/account/accunts',
+                    name: 'sub-page',
+                    icon: 'smile',
+                    component: './Account',
+                  },
+                ],
+              },
+              {
                 path: '/admin',
                 name: 'admin',
                 icon: 'crown',

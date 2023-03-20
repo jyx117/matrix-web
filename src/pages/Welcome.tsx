@@ -2,8 +2,9 @@ import React from 'react';
 import { PageContainer } from '@ant-design/pro-layout';
 import { Card, Alert, Typography } from 'antd';
 import { useIntl, FormattedMessage } from 'umi';
-import {getFromStorage, STORAGE_TYPE} from '@/utils/storage';
+import { getFromStorage, STORAGE_TYPE } from '@/utils/storage';
 import styles from './Welcome.less';
+import Account from './Account';
 
 const CodePreview: React.FC = ({ children }) => (
   <pre className={styles.pre}>
@@ -64,6 +65,9 @@ export default (): React.ReactNode => {
 
         <a href={url} target={'_blank'}>点击登录</a>
       </Card>
+
+
+      <Account />
     </PageContainer>
   );
 };
